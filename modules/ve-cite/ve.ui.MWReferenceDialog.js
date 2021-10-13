@@ -357,20 +357,28 @@ ve.ui.MWReferenceDialog.prototype.getActionProcess = function ( action ) {
 		return new OO.ui.Process( function () {
 			var surfaceModel = this.getFragment().getSurface();
 
-			this.referenceModel.setGroup( this.referenceGroupInput.getValue() );
+			// this.referenceModel.setGroup( this.referenceGroupInput.getValue() );
 
-			// Insert reference (will auto-create an internal item if needed)
-			if ( !( this.selectedNode instanceof ve.dm.MWReferenceNode ) ) {
-				if ( !this.referenceModel.findInternalItem( surfaceModel ) ) {
-					this.referenceModel.insertInternalItem( surfaceModel );
-				}
-				// Collapse returns a new fragment, so update this.fragment
-				this.fragment = this.getFragment().collapseToEnd();
-				this.referenceModel.insertReferenceNode( this.getFragment() );
-			}
+			// // Insert reference (will auto-create an internal item if needed)
+			// if ( !( this.selectedNode instanceof ve.dm.MWReferenceNode ) ) {
+			// 	if ( !this.referenceModel.findInternalItem( surfaceModel ) ) {
+			// 		this.referenceModel.insertInternalItem( surfaceModel );
+			// 	}
+			// 	// Collapse returns a new fragment, so update this.fragment
+			// 	this.fragment = this.getFragment().collapseToEnd();
+			// 	this.referenceModel.insertReferenceNode( this.getFragment() );
+			// }
+			
+			// // Update internal item
+			// this.referenceModel.updateInternalItem( surfaceModel );
 
-			// Update internal item
-			this.referenceModel.updateInternalItem( surfaceModel );
+			// itemNodeRange = internalList.getItemNode( this.listIndex ).getRange();
+			itemNodeRange = surfaceModel.getSelection().getRange();
+			doc = surfaceModel.getDocument(),
+			surfaceModel.change( ve.dm.TransactionBuilder.static.newFromRemoval( doc, itemNodeRange, true ) );
+			surfaceModel.change(
+				ve.dm.TransactionBuilder.static.newFromDocumentInsertion( doc, itemNodeRange.start, this.referenceModel.getDocument() )
+			);
 
 			this.close( { action: action } );
 		}, this );

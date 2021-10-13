@@ -171,7 +171,7 @@ ve.ui.MWCitationDialog.prototype.getActionProcess = function ( action ) {
 					dialog.fragment = dialog.getFragment().collapseToEnd();
 					dialog.referenceModel = new ve.dm.MWReferenceModel( doc );
 					dialog.referenceModel.insertInternalItem( surfaceModel );
-					dialog.referenceModel.insertReferenceNode( dialog.getFragment() );
+					// dialog.referenceModel.insertReferenceNode( dialog.getFragment() );
 				}
 
 				item = dialog.referenceModel.findInternalItem( surfaceModel );
@@ -204,7 +204,12 @@ ve.ui.MWCitationDialog.prototype.getActionProcess = function ( action ) {
 						internalList.getItemNode( dialog.referenceModel.getListIndex() ).getRange()
 					)
 				);
-				dialog.referenceModel.updateInternalItem( surfaceModel );
+				// dialog.referenceModel.updateInternalItem( surfaceModel );
+    			itemNodeRange = surfaceModel.getSelection().getRange();
+    			surfaceModel.change( ve.dm.TransactionBuilder.static.newFromRemoval( doc, itemNodeRange, true ) );
+    			surfaceModel.change(
+    				ve.dm.TransactionBuilder.static.newFromDocumentInsertion( doc, itemNodeRange.start, dialog.referenceModel.getDocument() )
+    			);
 
 				dialog.close( { action: action } );
 			} ).always( deferred.resolve );
