@@ -205,11 +205,18 @@ ve.ui.MWCitationDialog.prototype.getActionProcess = function ( action ) {
 					)
 				);
 				// dialog.referenceModel.updateInternalItem( surfaceModel );
-    			itemNodeRange = surfaceModel.getSelection().getRange();
-    			surfaceModel.change( ve.dm.TransactionBuilder.static.newFromRemoval( doc, itemNodeRange, true ) );
-    			surfaceModel.change(
-    				ve.dm.TransactionBuilder.static.newFromDocumentInsertion( doc, itemNodeRange.start, dialog.referenceModel.getDocument() )
-    			);
+				selection = surfaceModel.getSelection();
+    			if ( !selection.range ) { // if we use source editor, range is undefined
+    				dialog.getFragment().collapseToEnd().insertContent( dialog.referenceModel.getDocument().getData() ).collapseToEnd();
+    			} else {
+    				selectionRange = selection.getRange();
+    				doc = surfaceModel.getDocument(),
+    				surfaceModel.change( ve.dm.TransactionBuilder.static.newFromRemoval( doc, selectionRange, true ) );
+    				surfaceModel.change(
+    					ve.dm.TransactionBuilder.static.newFromDocumentInsertion( doc, selectionRange.start, dialog.referenceModel.getDocument() )
+    				);
+    			}
+    			
 
 				dialog.close( { action: action } );
 			} ).always( deferred.resolve );
