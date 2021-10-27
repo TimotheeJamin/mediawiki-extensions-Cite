@@ -372,15 +372,24 @@ ve.ui.MWReferenceDialog.prototype.getActionProcess = function ( action ) {
 			// }
 			
 			// // Update internal item
+			// item = this.referenceModel.findInternalItem( surfaceModel );
+			// this.getFragment().clone(
+			// 	new ve.dm.LinearSelection( item.getChildren()[ 0 ].getRange() )
+			// ),
 			// this.referenceModel.updateInternalItem( surfaceModel );
 
 			// itemNodeRange = internalList.getItemNode( this.listIndex ).getRange();
-			itemNodeRange = surfaceModel.getSelection().getRange();
-			doc = surfaceModel.getDocument(),
-			surfaceModel.change( ve.dm.TransactionBuilder.static.newFromRemoval( doc, itemNodeRange, true ) );
-			surfaceModel.change(
-				ve.dm.TransactionBuilder.static.newFromDocumentInsertion( doc, itemNodeRange.start, this.referenceModel.getDocument() )
-			);
+			selection = surfaceModel.getSelection();
+			if ( !selection.range ) { // if we use source editor, range is undefined
+				this.getFragment().collapseToEnd().insertContent( this.referenceModel.getDocument().getData() ).collapseToEnd();
+			} else {
+				selectionRange = selection.getRange();
+				doc = surfaceModel.getDocument(),
+				surfaceModel.change( ve.dm.TransactionBuilder.static.newFromRemoval( doc, selectionRange, true ) );
+				surfaceModel.change(
+					ve.dm.TransactionBuilder.static.newFromDocumentInsertion( doc, selectionRange.start, this.referenceModel.getDocument() )
+				);
+			}
 
 			this.close( { action: action } );
 		}, this );
