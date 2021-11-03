@@ -165,12 +165,13 @@ class ReferenceStack {
 			$this->refs[$group][$name] = &$ref;
 			$action = 'new';
 		} else {
-			// Change an existing entry.
-			$ref = &$this->refs[$group][$name];
-			$ref['count']++;
-			// Rollback the global counter since we won't create a new ref.
-			$this->refSequence--;
-			if ( $ref['text'] === null && $text !== null ) {
+			$refSameName = &$this->refs[$group][$name];
+			if ( $refSameName['text'] === null && $text !== null ) {
+				// Change an existing entry.
+				$ref = &$this->refs[$group][$name];
+				$ref['count']++;
+				// Rollback the global counter since we won't create a new ref.
+				$this->refSequence--;
 				// If no text was set before, use this text
 				$ref['text'] = $text;
 				// Use the dir parameter only from the full definition of a named ref tag
@@ -180,16 +181,51 @@ class ReferenceStack {
 				if ( $text !== null
 					// T205803 different strip markers might hide the same text
 					&& $stripState->unstripBoth( $text )
-					!== $stripState->unstripBoth( $ref['text'] )
+					!== $stripState->unstripBoth( $refSameName['text'] )
 				) {
 					// two refs with same name and different text
-					// add error message to the original ref
+					// add '-1' (or '-2'...) to name and create a new ref
+					// add error messages to the concerned refs
 					// TODO: standardize error display and move to `validateRef`.
-					$ref['text'] .= ' ' . $this->errorReporter->plain(
-						$parser, 'cite_error_references_duplicate_key', $name
-					);
+					$k = 0;
+					while( isset( $this->refs[$group][$name] ) ) {
+						$k++;
+						$name = $ref['name'] . '-' . $k;
+					}
+					if ( $refSameName['count']>0 ) {
+						$ref['text'] .= ' ' . $this->errorReporter->plain(
+							$parser, 'cite_error_references_duplicate_key', $ref['name']
+						);
+						if ( $k==1 ) {
+							$refSameName['text'] .= ' ' . $this->errorReporter->plain(
+								$parser, 'cite_error_references_duplicate_key', $ref['name']
+							);	
+						}
+					}
+					$ref['name'] .= '-' . $k;
+					$this->refs[$group][$name] = &$ref;
+					$action = 'new';
+				} else {
+					// Change an existing entry.
+					$ref = &$this->refs[$group][$name];
+					$ref['count']++;
+					// Rollback the global counter since we won't create a new ref.
+					$this->refSequence--;
+					if ( $ref['count'] == 1 && isset( $this->refs[$group][$name . '-1'] ) ) {
+						$ref['text'] .= ' ' . $this->errorReporter->plain(
+							$parser, 'cite_error_references_duplicate_key', $ref['name']
+						);
+						$k = 1;
+						while ( isset( $this->refs[$group][$name . '-' . $k] ) ) {
+							$this->refs[$group][$name . '-' . $k]['text'] .= ' ' . $this->errorReporter->plain(
+								$parser, 'cite_error_references_duplicate_key', $ref['name']
+							);
+							$k++;
+						}
+
+					}
+					$action = 'increment';
 				}
-				$action = 'increment';
 			}
 		}
 
@@ -225,7 +261,7 @@ class ReferenceStack {
 				$ref['text'] = $error;
 			}
 		}
-
+		
 		$this->refCallStack[] = [ $action, $ref['key'], $group, $name, $extends, $text, $argv ];
 		return $ref;
 	}
