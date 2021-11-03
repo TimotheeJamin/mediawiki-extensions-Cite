@@ -67,10 +67,10 @@ class FootnoteMarkFormatter {
 		if ( isset( $ref['extendsIndex'] ) ) {
 			$label .= '.' . $this->messageLocalizer->localizeDigits( $ref['extendsIndex'] );
 		}
-
-		$key = $ref['name'] ?? $ref['key'];
-		$count = $ref['name'] ? $ref['key'] . '-' . $ref['count'] : null;
-		$subkey = $ref['name'] ? '-' . $ref['key'] : null;
+		
+		$key = $ref['name'] ? $ref['name'] : $ref['key'];
+		$count = $ref['name'] ? $ref['count'] : null;
+		$subkey = null;
 
 		return $parser->recursiveTagParse(
 			$this->messageLocalizer->msg(

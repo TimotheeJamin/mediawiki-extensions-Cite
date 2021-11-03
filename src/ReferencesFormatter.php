@@ -190,8 +190,8 @@ class ReferencesFormatter {
 				$id = $val['key'];
 				$backlinkId = $this->anchorFormatter->refKey( $val['key'] );
 			} else {
-				$id = $key . '-' . $val['key'];
-				$backlinkId = $this->anchorFormatter->refKey( $key, $val['key'] . '-' . $val['count'] );
+				$id = $key;
+				$backlinkId = $this->anchorFormatter->refKey( $key, $val['count'] );
 			}
 			return $this->messageLocalizer->msg(
 				'cite_references_link_one',
@@ -208,7 +208,7 @@ class ReferencesFormatter {
 		for ( $i = 0; $i <= ( $val['count'] ?? -1 ); $i++ ) {
 			$backlinks[] = $this->messageLocalizer->msg(
 				'cite_references_link_many_format',
-				$this->anchorFormatter->refKey( $key, $val['key'] . '-' . $i ),
+				$this->anchorFormatter->refKey( $key, $i ),
 				$this->referencesFormatEntryNumericBacklinkLabel(
 					$val['number'] .
 						( isset( $val['extendsIndex'] ) ? '.' . $val['extendsIndex'] : '' ),
@@ -220,7 +220,7 @@ class ReferencesFormatter {
 		}
 		return $this->messageLocalizer->msg(
 			'cite_references_link_many',
-			$this->anchorFormatter->getReferencesKey( $key . '-' . ( $val['key'] ?? '' ) ),
+			$this->anchorFormatter->getReferencesKey( $key ),
 			$this->listToText( $backlinks ),
 			$text . $error,
 			$extraAttributes
